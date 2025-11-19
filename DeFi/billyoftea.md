@@ -8,10 +8,13 @@ timezone: UTC+8
 # 你的名字
 
 1. 自我介绍
+北大汇丰数量与金融科技专业研一，以前的研究方向集中在量化金融和AI Agent方向，对web3了解不深，希望通过这个项目学习web3相关知识。
 2. 你认为你会完成这次共学小组吗？
+我会努力的
 3. 你感兴趣的小组
+DeFi 合约组>链上数据组>合约安全组
 4. 你的联系方式（Wechat or Telegram）
-
+Wechat: ShutUUpe
 ## Notes
 
 <!-- Content_START -->
