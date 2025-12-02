@@ -9,11 +9,11 @@
 
 # Part I - Geth 简介
 
-### 背景：以太坊网络的运作方式
+## 背景：以太坊网络的运作方式
 
 可以先把以太坊理解成一个由全球许多计算机共同维护的公共账本，没有中心服务器。要让这个系统正常运作，主要涉及三个概念：**以太坊客户端、节点、RPC**。
 
-#### 1. 以太坊客户端：协议的具体实现
+### 1. 以太坊客户端：协议的具体实现
 
 以太坊客户端是一类遵循以太坊协议的软件实现，比如 Geth、Nethermind、Erigon 等。它们负责：
 
@@ -27,7 +27,7 @@
 > 使用情景：  
 > 你在电脑上安装并运行 Geth，实际上就是在运行一个以太坊客户端实例，它会开始从网络上同步区块，把本地变成一个以太坊节点。
 
-#### 2. 节点：运行客户端的软件实例
+### 2. 节点：运行客户端的软件实例
 
 “节点”指的是**运行了以太坊客户端程序的机器**。从功能和数据完整性角度，一般分为：
 
@@ -40,7 +40,7 @@
 > 使用情景： 你在钱包里发起一笔转账交易.
 > 交易从钱包发出之后，会先发送给一个或多个节点，这些节点再向网络扩散。最终，有矿工/验证人节点把它打包进区块，你的交易才真正“上链”。
 
-#### 3. RPC：给外部程序用的访问接口
+### 3. RPC：给外部程序用的访问接口
 
 RPC（Remote Procedure Call，远程过程调用）是节点向外暴露的一组标准接口，用来**让其他程序查询或提交数据**，常见是 HTTP RPC 或 WebSocket RPC。
 
@@ -57,11 +57,11 @@ RPC 的好处是：你不需要在自己的程序里实现底层网络协议，�
 
 ---
 
-### Geth：最主流的以太坊客户端之一
+## Geth：最主流的以太坊客户端之一
 
 Geth（Go Ethereum）是用 Go 语言实现的以太坊客户端，也是目前使用最广泛的实现之一。它主要包含两部分：
 
-#### 1. 命令行程序 `geth`
+### 1. 命令行程序 `geth`
 
 安装 Geth 后，你会得到一个名为 `geth` 的命令行工具。运行它可以：
 
@@ -99,7 +99,7 @@ geth --sepolia --http --http.api eth,net,web3
 > - 本课程 / 一般练习：直接连公共的 Sepolia RPC 即可，比如：`https://ethereum-sepolia-rpc.publicnode.com`。  
 > - 需要扫主网大量历史数据、或做交易所钱包服务时，更倾向于自己起一个 Geth 节点，跑私有 RPC。
 
-#### 2. Go 客户端库（`go-ethereum`）
+### 2. Go 客户端库（`go-ethereum`）
 
 除了命令行工具，Geth 还提供了一套 Go 客户端库，方便在 Go 代码里和以太坊交互。常用的是 `ethclient` 包：
 
@@ -137,7 +137,10 @@ Go（Golang）是 Google 开发的一门静态强类型语言，语法相对简�
 - 新建一个最简单的 Go 项目；
 - 知道如何 `import` 其他库，并调用它们提供的函数。
 
-不需要掌握复杂的语法特性、并发、泛型等内容。
+关于 Go 的语法，可以参考：
+
++ A Tour of Go https://go.dev/tour/list
++ 中文版 https://tour.go-zh.org/list
 
 ## 1. 安装 Go
 
@@ -211,7 +214,7 @@ import "github.com/ethereum/go-ethereum/ethclient"
 >   ```bash
 >   export GOPROXY=https://goproxy.cn,direct # 临时代理, 在同一终端会话生效
 >   ```
-> 设置后重新执行 `go get` 命令即可。
+>   设置后重新执行 `go get` 命令即可。
 
 本课用到的 Go 知识基本只有：
 
@@ -277,7 +280,7 @@ fmt.Println("status:", receipt.Status)
 fmt.Println("logs:", receipt.Logs)
 ```
 
-合并到一起的一个样例: 
+合并到一起的一个样例，该样例仅打印了部分字段，建议同学们修改代码，打印出完整的结构: 
 ```go
 package main
 
@@ -350,14 +353,12 @@ Value (wei): 0
 Receipt status: 1
 Logs: 2 entries
 # 如果一切正常, 你将会得到类似于上面的输出结果
-# 你可以替换为你自己想查询的任何交易id
+# 你可以修改代码打印任何你想查询的数据和数据结构
 ```
 
 # Follow Up - 理解 block, transaction, receipt 的结构
 
 上一节中查询到的数据会包含大量字段。本部分任务要求理解其中关键字段的含义。
-
-可以观看 B 站肖臻老师的公开课，并配合相关文档来理解。
 
 关于 Block 建议理解的字段包括：
 
@@ -370,7 +371,7 @@ Logs: 2 entries
 
 Follow-Up：
 
-- 为何 parentHash 能形成区块链
+- 为何 parentHash 能形成区块链？
 - gasLimit 如何影响合约执行
 
 ***
@@ -386,7 +387,7 @@ Follow-Up：
 
 Follow-Up：
 
-- 一笔交易最终执行逻辑是如何解析 input 的
+- 什么是 ABI ？一笔交易最终执行逻辑是如何解析 input 的
 
 ***
 
@@ -396,13 +397,11 @@ Follow-Up：
 - logs
 - contractAddress
 
-Follow-Up：
+***
 
-- 为什么 Receipt 里有 logs, 而 transaction 本身没有
-- 为什么 block 中也包含 logs bloom
+可供参考的资料包括但不限于，也可以自行检索：
 
-# Follow Up: 使用 eth_call 自己调用 Week 1 合约 
-
-例如靶子合约的 hint(), 解题合约的方法等
-
-.
++ https://www.bilibili.com/video/BV1Vt411X7JF
++ 以太坊文档里关于 Blocks 的介绍：https://ethereum.org/developers/docs/blocks/
++ https://ethereum.org/developers/docs/transactions/
++ https://www.geeksforgeeks.org/computer-networks/ethereum-block-structure/
