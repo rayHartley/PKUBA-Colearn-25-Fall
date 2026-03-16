@@ -4,8 +4,7 @@
 
 🎉PKUBA 共学小组大作业第一弹来了！
 
-
-第一份大作业是我们和 @trondao 公链生态的AINFT @OfficialAINFT 合作的一个小型 Hackathon 🚀
+第一份大作业是我们和 [@trondao](https://x.com/trondao) 公链生态的AINFT [@OfficialAINFT](https://x.com/OfficialAINFT) 合作的一个小型 Hackathon 🚀
 
 
 两周时间，用 AI Agent × Web3 构建真实可用的链上应用，奖金池 1000 USDT 激励同学们开发 💰
