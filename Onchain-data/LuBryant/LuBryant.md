@@ -55,7 +55,8 @@ timezone: UTC+8
 6. 提交更改（Commit changes）。
 
 #### Github 使用小知识
-如何知道自己有使用权限？
+
+**如何知道自己有使用权限？**
 方法一：最直观的 UI 验证（看“Settings”标签）
 这是最简单的方法，不需要写代码。
 
@@ -85,6 +86,7 @@ git push upstream main --dry-run
 如果失败： 会显示 403 Forbidden 或者 Permission denied。
 
 ---
+
 Fork 了项目只是自己有了一份，并不会修改原有仓库。
 
 既然你已经在自己的 Fork 里提交了代码，现在要把这个改动“发送”给你的朋友。因为你是在网页端操作，最简单的方法就是 提 Pull Request (PR)。
@@ -3136,5 +3138,17 @@ export TELEGRAM_CHAT_ID="your_chat_id"
 
 看视频学习
 structured intro to how Bitcoin works and how to reason about claims; available via Princeton’s course page and broadly via online versions. [Bitcoin and Cryptocurrency Technologies](https://online.princeton.edu/bitcoin-and-cryptocurrency-technologies?utm_source=chatgpt.com)
+
+### 20256.02.07
+
+pharos
+
+Conflux
+
+BSIM 卡
+
+anchorx, PayFi, dForce 离岸人民币, poc，一带一路相关可以联系
+
+x4023 那个题目，可以关注一下。
 
 <!-- Content_END -->
