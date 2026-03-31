@@ -38,6 +38,45 @@ contract HelloWeb3 {
 }
 ```
 
+<img width="1917" height="1269" alt="image" src="https://github.com/user-attachments/assets/d1d48668-4b81-4d54-8ef8-801582b9871d" />
+
+2.运行hello方法 并在区块链浏览器查看结果
+
+<img width="1923" height="1268" alt="image" src="https://github.com/user-attachments/assets/9cbaa5c2-6975-43e7-ae6b-69f7bec03399" />
+
+
+Transactions:
+
+<img width="1391" height="737" alt="image" src="https://github.com/user-attachments/assets/d819fb26-be9a-4aed-8b44-092aef7afd2c" />
+
+
+Events:
+
+<img width="1392" height="843" alt="image" src="https://github.com/user-attachments/assets/7eccd22c-bb3f-4cf9-850c-ee0be4f13898" />
+
+#### Part II - 智能合约编写
+
+成功获取FLAG: PKU_Blockchain_Colearn_Week1_Success
+
+交易哈希: 0x7661fbb60c03948fb20c9bc7f13de6e45dc3933ca0b2963b01ec73d5446b99fb
+
+<img width="1921" height="1268" alt="image" src="https://github.com/user-attachments/assets/9e7314b0-b716-479a-90c2-30109f5123b0" />
+
+```jsx
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract HelloWeb3 {
+    event Greeting(address indexed sender, uint256 timestamp);
+    
+    constructor() {}
+
+    function hello() external {
+        emit Greeting(msg.sender, block.timestamp);
+    }
+}
+```
+
 <img width="1917" height="1269" alt="image" src="https://github.com/user-attachments/assets/c01b0f7c-e85c-49ed-af4a-fb19e694f172" />
 
 
