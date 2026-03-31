@@ -236,7 +236,32 @@ If payment is missing, the API returns a payment-required response.
 
 ---
 
-## 10. Project Structure
+## 10. Demo
+
+### Live Demo
+Access the public demo here:
+
+https://tron-whale-insight-agent-1.onrender.com
+
+### Demo Features
+The demo provides three main functions for exploring TRON whale activity:
+
+- **Whale Dashboard** – monitor recent large TRON stablecoin transfers and whale events  
+- **Address Intelligence** – inspect activity patterns for a specific TRON address  
+- **AI Query** – ask natural-language questions about whale behavior and receive summarized insights  
+
+### How to Use the Demo
+1. Open the live demo link.  
+2. On the **Whale Dashboard**, select a time window (e.g., `24h`) and click **Refresh** to load whale events.  
+3. Review the summary cards and transfer table showing detected whale transactions.  
+4. Use **Address Intelligence** to analyze a specific wallet address.  
+5. Use **AI Query** to ask questions such as:
+   - “What were the largest whale transfers in the last 24 hours?”
+   - “Which token had the most whale activity?”
+
+Results may vary depending on recent on-chain activity and the selected analysis window.
+
+## 11. Project Structure
 
 ```text
 backend/
