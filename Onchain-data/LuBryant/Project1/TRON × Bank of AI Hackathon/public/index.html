@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TRON Whale Radar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <div class="hero-topline">
+            <div class="eyebrow">
+              <span class="status-dot"></span>
+              <span id="eyebrowText">AI On-chain Data Agent on TRON</span>
+            </div>
+            <div class="lang-switch" aria-label="Language switcher">
+              <button id="langZhButton" class="lang-button" type="button">中文</button>
+              <button id="langEnButton" class="lang-button active" type="button">EN</button>
+            </div>
+          </div>
+          <h1>TRON Whale Radar</h1>
+          <p id="heroDescription">
+            Track whale-sized USDT and TRX transfers, generate AI-style wallet narratives, and gate deep
+            dives behind x402-ready premium access.
+          </p>
+        </div>
+        <div class="hero-card">
+          <div id="modeBadge" class="mode-badge">Loading paywall mode...</div>
+          <div class="hero-meta">
+            <div>
+              <span id="heroBankLabel" class="meta-label">Bank of AI</span>
+              <strong id="heroBankValue">x402 + 8004 ready</strong>
+            </div>
+            <div>
+              <span id="heroDataLabel" class="meta-label">Data Sources</span>
+              <strong id="heroDataValue">TronGrid + TRONSCAN</strong>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="panel pitch-panel">
+          <div class="panel-head">
+            <div>
+              <h2 id="pitchTitle">Why This Wins</h2>
+              <p id="pitchDescription">
+                A judge-facing summary of why this project is more than a dashboard: it is a TRON-native AI
+                agent with a real premium business model powered by Bank of AI.
+              </p>
+            </div>
+          </div>
+          <div id="pitchCards" class="pitch-grid"></div>
+          <div id="demoFlow" class="demo-flow"></div>
+        </section>
+
+        <section class="panel bank-panel">
+          <div class="panel-head">
+            <div>
+              <h2 id="bankTitle">Bank of AI Readiness</h2>
+              <p id="bankDescription">
+                Checking whether the premium endpoint is connected to the official Bank of AI x402 facilitator.
+              </p>
+            </div>
+            <div id="bankLinks" class="link-row"></div>
+          </div>
+          <div id="bankHealth" class="health-strip"></div>
+          <div id="bankCards" class="bank-grid"></div>
+          <div id="bankIssues" class="diagnostic-list hidden"></div>
+        </section>
+
+        <section class="panel controls">
+          <div class="panel-head">
+            <h2 id="controlsTitle">Track a Wallet</h2>
+            <p id="controlsDescription">Paste a TRON address or start from a monitored whale preset.</p>
+          </div>
+          <form id="addressForm" class="search-form">
+            <input id="addressInput" type="text" autocomplete="off" placeholder="TLa2f6VPqDgRE67v1736s7bJ8Ray5wYjU7" />
+            <div class="form-actions">
+              <button type="submit" id="analyzeButton">Analyze Wallet</button>
+              <button type="button" id="refreshCurrentButton" class="secondary-button">Refresh Current</button>
+            </div>
+          </form>
+          <div id="watchlistChips" class="chip-row"></div>
+          <div id="statusBanner" class="status-banner hidden"></div>
+        </section>
+
+        <section class="panel market-panel">
+          <div class="panel-head">
+            <div>
+              <h2 id="marketTitle">TRON Market Pulse & Live Counterparty Ranking</h2>
+              <p id="marketDescription">
+                The cards below rank real counterparties across tracked public wallets with one shared metric.
+              </p>
+            </div>
+            <div class="panel-actions">
+              <button type="button" id="refreshMarketButton" class="secondary-button">Refresh Ranking</button>
+            </div>
+          </div>
+          <div id="marketHealth" class="health-strip"></div>
+          <div id="marketDiagnostics" class="diagnostic-list hidden"></div>
+          <div id="marketCards" class="stat-grid"></div>
+          <div id="hotWallets" class="wallet-grid"></div>
+        </section>
+
+        <section class="panel analysis-panel">
+          <div class="panel-head">
+            <div>
+              <h2 id="analysisTitle">Free Wallet Overview</h2>
+              <p id="analysisDescription">Fast summary for recent activity, net flow, and whale alerts.</p>
+            </div>
+            <div class="panel-actions">
+              <button type="button" id="refreshOverviewButton" class="secondary-button">Refresh Wallet</button>
+            </div>
+          </div>
+          <div id="analysisEmpty" class="empty-state">
+            Select a watchlist wallet or submit a TRON address to see the free overview.
+          </div>
+          <div id="analysisContent" class="analysis-content hidden">
+            <div class="headline-row">
+              <div>
+                <div id="walletAddress" class="wallet-address"></div>
+                <h3 id="walletHeadline"></h3>
+              </div>
+              <div id="tagRow" class="tag-row"></div>
+            </div>
+            <div id="analysisHealth" class="health-strip"></div>
+            <div id="summaryList" class="bullet-list"></div>
+            <div id="observationList" class="observation-list"></div>
+            <div id="alertList" class="alert-list"></div>
+            <div id="analysisDiagnostics" class="diagnostic-list hidden"></div>
+            <div id="metricCards" class="stat-grid"></div>
+            <div id="transferTableWrap" class="table-wrap"></div>
+          </div>
+        </section>
+
+        <section class="panel premium-panel">
+          <div class="panel-head">
+            <h2 id="premiumTitle">Premium Insight</h2>
+            <p id="premiumDescription">Unlock wallet profiling, operational hypotheses, and next-step watchpoints.</p>
+          </div>
+          <div class="premium-cta">
+            <button id="premiumButton" class="premium-button" type="button">Unlock Premium Insight</button>
+            <span id="premiumHint">Run a free overview first, then unlock the premium report.</span>
+          </div>
+          <div id="premiumChallenge" class="premium-challenge hidden"></div>
+          <div id="premiumContent" class="premium-content hidden"></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

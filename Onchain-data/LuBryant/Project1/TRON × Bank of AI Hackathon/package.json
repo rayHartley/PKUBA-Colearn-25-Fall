@@ -1,0 +1,14 @@
+{
+  "name": "tron-whale-radar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI-powered TRON whale tracking dashboard with x402-protected premium insights.",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node tests/analysis.test.js && node tests/cache.test.js && node tests/insights.test.js && node tests/leaderboard.test.js && node tests/x402.test.js",
+    "check:bankofai": "node scripts/check-bankofai-ready.mjs",
+    "demo:buyer": "node scripts/submit-x-payment.mjs"
+  }
+}
