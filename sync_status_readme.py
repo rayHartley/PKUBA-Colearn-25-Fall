@@ -113,16 +113,35 @@ def extract_content_between_markers(file_content):
     return file_content[start_index + len(Content_START_MARKER):end_index].strip()
 
 def find_date_in_content(content, local_date):
+    # Helper function to remove leading zeros from month and day and escape dots for regex
+    def remove_leading_zeros(date_str):
+        parts = date_str.split('.')
+        if len(parts) == 3:
+            # Remove leading zeros from month and day
+            year, month, day = parts
+            month = str(int(month))  # Remove leading zero
+            day = str(int(day))  # Remove leading zero
+            return f"{year}\\.{month}\\.{day}"  # Escape dots for regex
+        return date_str.replace('.', '\\.')  # Escape dots for regex
+    
+    # Helper function to escape dots in date string for regex
+    def escape_dots(date_str):
+        return date_str.replace('.', '\\.')
+    
     date_patterns = [
-        r'#\s*' + local_date.strftime("%Y.%m.%d"),
-        r'##\s*' + local_date.strftime("%Y.%m.%d"),
-        r'###\s*' + local_date.strftime("%Y.%m.%d"),
-        r'#\s*' + local_date.strftime("%Y.%m.%d").replace('.0', '.'),
-        r'##\s*' + local_date.strftime("%Y.%m.%d").replace('.0', '.'),
-        r'###\s*' + local_date.strftime("%Y.%m.%d").replace('.0', '.'),
-        r'#\s*' + local_date.strftime("%m.%d").lstrip('0').replace('.0', '.'),
-        r'##\s*' + local_date.strftime("%m.%d").lstrip('0').replace('.0', '.'),
-        r'###\s*' + local_date.strftime("%m.%d").lstrip('0').replace('.0', '.'),
+        r'#\s*' + escape_dots(local_date.strftime("%Y.%m.%d")),
+        r'##\s*' + escape_dots(local_date.strftime("%Y.%m.%d")),
+        r'###\s*' + escape_dots(local_date.strftime("%Y.%m.%d")),
+        r'#\s*' + escape_dots(local_date.strftime("%Y.%m.%d").replace('.0', '.')),
+        r'##\s*' + escape_dots(local_date.strftime("%Y.%m.%d").replace('.0', '.')),
+        r'###\s*' + escape_dots(local_date.strftime("%Y.%m.%d").replace('.0', '.')),
+        # Add pattern for format like 2025.1.5 (both month and day without leading zeros)
+        r'#\s*' + remove_leading_zeros(local_date.strftime("%Y.%m.%d")),
+        r'##\s*' + remove_leading_zeros(local_date.strftime("%Y.%m.%d")),
+        r'###\s*' + remove_leading_zeros(local_date.strftime("%Y.%m.%d")),
+        r'#\s*' + escape_dots(local_date.strftime("%m.%d").lstrip('0').replace('.0', '.')),
+        r'##\s*' + escape_dots(local_date.strftime("%m.%d").lstrip('0').replace('.0', '.')),
+        r'###\s*' + escape_dots(local_date.strftime("%m.%d").lstrip('0').replace('.0', '.')),
         r'#\s*' + local_date.strftime("%Y/%m/%d"),
         r'##\s*' + local_date.strftime("%Y/%m/%d"),
         r'###\s*' + local_date.strftime("%Y/%m/%d"),
@@ -132,9 +151,9 @@ def find_date_in_content(content, local_date):
         r'#\s*' + local_date.strftime("%Y-%m-%d"),
         r'##\s*' + local_date.strftime("%Y-%m-%d"),
         r'###\s*' + local_date.strftime("%Y-%m-%d"),
-        r'#\s*' + local_date.strftime("%m.%d").zfill(5),
-        r'##\s*' + local_date.strftime("%m.%d").zfill(5),
-        r'###\s*' + local_date.strftime("%m.%d").zfill(5)
+        r'#\s*' + escape_dots(local_date.strftime("%m.%d").zfill(5)),
+        r'##\s*' + escape_dots(local_date.strftime("%m.%d").zfill(5)),
+        r'###\s*' + escape_dots(local_date.strftime("%m.%d").zfill(5))
     ]
     combined_pattern = '|'.join(date_patterns)
     return re.search(combined_pattern, content)
@@ -275,7 +294,7 @@ def get_all_user_files():
     递归查找所有用户文件，支持子文件夹中的 .md 文件
     返回格式: (nickname, relative_path)
     """
-    exclude_prefixes = ('template', 'readme')
+    ALLOWED_DIRS = {'DeFi', 'Onchain-data', 'Security'}
     user_files = []
     
     # 递归遍历所有目录
@@ -284,24 +303,28 @@ def get_all_user_files():
         if '.git' in root:
             continue
             
+        # Check if current directory is within allowed directories
+        norm_root = os.path.normpath(root)
+        path_parts = norm_root.split(os.sep)
+        
+        # Only process files in allowed directories
+        if not any(d in ALLOWED_DIRS for d in path_parts):
+            continue
+
         for f in files:
             if f.lower().endswith(FILE_SUFFIX.lower()):
-                # 检查是否应该排除
-                should_exclude = False
-                for prefix in exclude_prefixes:
-                    if f.lower().startswith(prefix):
-                        should_exclude = True
-                        break
+                # Exclude README.md and Template files
+                if f.lower() == 'readme.md' or f.lower().startswith('template'):
+                    continue
                 
-                if not should_exclude:
-                    # 获取相对路径
-                    rel_path = os.path.join(root, f)
-                    # 标准化路径（处理 ./ 前缀）
-                    if rel_path.startswith('./'):
-                        rel_path = rel_path[2:]
-                    # 获取文件名（不含扩展名）作为 nickname
-                    nickname = f[:-len(FILE_SUFFIX)]
-                    user_files.append((nickname, rel_path))
+                # 获取相对路径
+                rel_path = os.path.join(root, f)
+                # 标准化路径（处理 ./ 前缀）
+                if rel_path.startswith('./') or rel_path.startswith('.\\'):
+                    rel_path = rel_path[2:]
+                # 获取文件名（不含扩展名）作为 nickname
+                nickname = f[:-len(FILE_SUFFIX)]
+                user_files.append((nickname, rel_path))
     
     # 如果文件在子文件夹中，使用相对路径作为标识
     # 否则使用文件名
@@ -309,7 +332,9 @@ def get_all_user_files():
     for nickname, rel_path in user_files:
         if os.path.dirname(rel_path):  # 在子文件夹中
             # 使用相对路径作为标识，但去掉扩展名
-            result.append(rel_path[:-len(FILE_SUFFIX)])
+            # Ensure forward slashes for consistency
+            identifier = rel_path[:-len(FILE_SUFFIX)].replace('\\', '/')
+            result.append(identifier)
         else:  # 在根目录
             result.append(nickname)
     
@@ -373,18 +398,26 @@ def update_readme(content):
             '| ------------- | ' + ' | '.join(['----' for _ in week_ranges]) + ' |\n'
         ]
 
-        existing_users = set()
+        # 获取当前所有有效用户
+        all_valid_users = set(get_all_user_files())
+        existing_users_in_table = set()
+        
         table_rows = content[start_index + len(TABLE_START_MARKER):end_index].strip().split('\n')[2:]
 
         for row in table_rows:
             user_name = extract_name_from_row(row)
             if user_name:
-                existing_users.add(user_name)
-                new_table.append(generate_user_row(user_name))
+                # 关键修改：只保留在有效用户列表中的用户
+                if user_name in all_valid_users:
+                    existing_users_in_table.add(user_name)
+                    new_table.append(generate_user_row(user_name))
+                else:
+                    logging.info(f"Removing invalid/excluded user from table: {user_name}")
             else:
                 logging.warning(f"Skipping invalid row: {row}")
 
-        new_users = set(get_all_user_files()) - existing_users
+        # 添加表格中没有的新用户
+        new_users = all_valid_users - existing_users_in_table
         for user in new_users:
             if user.strip():
                 new_table.append(generate_user_row(user))
@@ -462,13 +495,14 @@ def generate_user_row(user):
         if now_local >= week_end_local:
             # 如果该周没有打卡，算作请假
             if week_status == "⭕️":
-                leave_count += 1
-                # 如果请假超过1次，标记为失败
-                if leave_count > 1:
-                    is_eliminated = True
-                    new_row += " ❌ |"
-                    continue
-        
+                # 修改：只有从第4周（index 3, 12.08）开始才计入请假次数，前几周仅记录符号
+                if i >= 3:
+                    leave_count += 1
+                    # 如果请假超过1次，标记为失败
+                    if leave_count > 1:
+                        is_eliminated = True
+                        new_row += " ❌ |"
+                        continue
         # 显示该周的状态
         new_row += f" {week_status} |"
             
