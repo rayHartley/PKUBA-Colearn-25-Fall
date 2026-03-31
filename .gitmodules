@@ -1,0 +1,3 @@
+[submodule "Onchain-data/rayHartley/ai-paygate"]
+	path = Onchain-data/rayHartley/ai-paygate
+	url = https://github.com/rayHartley/ai-paygate.git
