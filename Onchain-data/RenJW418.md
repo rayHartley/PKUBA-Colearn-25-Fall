@@ -171,4 +171,209 @@ contractAddress:部署合约生成的新地址
 
 ### 2026.01.11
 暂无内容更新 所以继续消化之前的内容
+### 2026.05.04
+
+## 大作业第二弹：Intro to Atomic Arb
+
+### 1. 交易分析与套利路径
+
+复刻目标交易：[0x9edea0b66aece76f0bc7e185f9ce5cac81ce41bdd1ec4d3cf1907274bc8aa730](https://etherscan.io/tx/0x9edea0b66aece76f0bc7e185f9ce5cac81ce41bdd1ec4d3cf1907274bc8aa730)
+
+**套利路径（4 步）：**
+
+```
+WETH → EMP → pEMP → pfWETH → WETH
+```
+
+| 步骤 | TokenIn | TokenOut | 协议 | 合约地址 |
+|------|---------|----------|------|----------|
+| 1 | WETH | EMP | Uniswap V3 swap | `0xe092769bc1fa5262D4f48353f90890Dcc339BF80` |
+| 2 | EMP | pEMP | Peapods `bond()` | `0x4343A06B930Cf7Ca0459153C62CC5a47582099E1` |
+| 3 | pEMP | pfWETH | Uniswap V2 swap | `0x9FF3226906eB460E11d88f4780C84457A2f96C3e` |
+| 4 | pfWETH | WETH | ERC-4626 `redeem()` | `0x395dA89bDb9431621A75DF4e2E3B993Acc2CaB3D` |
+
+**套利原理：**
+- pEMP/EMP 的 Peapods 内部兑换比率与 Uniswap V2 市价出现偏差
+- bot 在 V3 买入 EMP，通过 Peapods bond 包装成 pEMP，在 V2 的溢价中换出 pfWETH，最后 redeem 回 WETH
+- 一圈下来 WETH 数量净增加 → 无风险套利
+
+**几个关键坑：**
+1. `bond()` 有 3 个参数（含 `amountMintMin`），不是 2 个
+2. pEMP 是 fee-on-transfer token，转给 V2 Pair 时有税；必须用"到账前后余额之差"作为实际 amountIn 来计算 amountOut，否则触发 `UniswapV2: K` 错误
+3. Step 4 的 PFWETH_POD 不是普通 Peapods Pod，而是 ERC-4626 标准的 Vault，需调用 `redeem(shares, receiver, owner)` 而非 `debond()`
+4. Fork 必须用 TX_HASH 而非 block number，否则 block 内该 TX 之前的其他交易改变了池子状态，导致结果偏差（相差约 18 gwei 的利息）
+
+---
+
+### 2. 套利合约 ArbBot.sol
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+interface IERC20 {
+    function approve(address spender, uint256 amount) external returns (bool);
+    function transfer(address to, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+}
+
+interface IUniswapV3Pool {
+    function swap(
+        address recipient,
+        bool zeroForOne,
+        int256 amountSpecified,
+        uint160 sqrtPriceLimitX96,
+        bytes calldata data
+    ) external returns (int256 amount0, int256 amount1);
+    function token0() external view returns (address);
+    function token1() external view returns (address);
+}
+
+interface IUniswapV2Pair {
+    function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes calldata data) external;
+    function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);
+    function token0() external view returns (address);
+}
+
+// pEMP Pod（Peapods WeightedIndex，bond 有 3 个参数）
+interface IPeapodsPod {
+    function bond(address token, uint256 amount, uint256 amountMintMin) external;
+}
+
+// pfWETH Pod（ERC-4626 Vault）
+interface IERC4626 {
+    function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets);
+}
+
+contract ArbBot {
+    address constant WETH       = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address constant V3_POOL    = 0xe092769bc1fa5262D4f48353f90890Dcc339BF80;
+    address constant PEMP_POD   = 0x4343A06B930Cf7Ca0459153C62CC5a47582099E1;
+    address constant V2_PAIR    = 0x9FF3226906eB460E11d88f4780C84457A2f96C3e;
+    address constant PFWETH_POD = 0x395dA89bDb9431621A75DF4e2E3B993Acc2CaB3D;
+
+    uint160 constant MIN_SQRT_RATIO = 4295128739;
+    uint160 constant MAX_SQRT_RATIO = 1461446703485210103287273052203988822378723970342;
+
+    function executeArb(uint256 amountIn) external returns (uint256 amountOut) {
+        // Step 1: WETH → EMP via Uniswap V3
+        bool zeroForOne = (IUniswapV3Pool(V3_POOL).token0() == WETH);
+        uint160 sqrtLimit = zeroForOne ? MIN_SQRT_RATIO + 1 : MAX_SQRT_RATIO - 1;
+        IUniswapV3Pool(V3_POOL).swap(address(this), zeroForOne, int256(amountIn), sqrtLimit, "");
+
+        address emp = zeroForOne
+            ? IUniswapV3Pool(V3_POOL).token1()
+            : IUniswapV3Pool(V3_POOL).token0();
+        uint256 empBal = IERC20(emp).balanceOf(address(this));
+
+        // Step 2: EMP → pEMP via Peapods bond
+        IERC20(emp).approve(PEMP_POD, empBal);
+        IPeapodsPod(PEMP_POD).bond(emp, empBal, 0);
+        uint256 pempBal = IERC20(PEMP_POD).balanceOf(address(this));
+
+        // Step 3: pEMP → pfWETH via Uniswap V2
+        // pEMP 是 fee-on-transfer token，用快照法量实际到账量
+        bool pempIsToken0 = (IUniswapV2Pair(V2_PAIR).token0() == PEMP_POD);
+        uint256 pairPempBefore = IERC20(PEMP_POD).balanceOf(V2_PAIR);
+        (uint112 r0, uint112 r1,) = IUniswapV2Pair(V2_PAIR).getReserves();
+        IERC20(PEMP_POD).transfer(V2_PAIR, pempBal);
+        uint256 actualPempIn = IERC20(PEMP_POD).balanceOf(V2_PAIR) - pairPempBefore;
+
+        if (pempIsToken0) {
+            uint256 pfwethOut = _getAmountOut(actualPempIn, r0, r1);
+            IUniswapV2Pair(V2_PAIR).swap(0, pfwethOut, address(this), "");
+        } else {
+            uint256 pfwethOut = _getAmountOut(actualPempIn, r1, r0);
+            IUniswapV2Pair(V2_PAIR).swap(pfwethOut, 0, address(this), "");
+        }
+
+        // Step 4: pfWETH → WETH via ERC-4626 redeem
+        uint256 pfwethBal = IERC20(PFWETH_POD).balanceOf(address(this));
+        IERC4626(PFWETH_POD).redeem(pfwethBal, address(this), address(this));
+
+        amountOut = IERC20(WETH).balanceOf(address(this));
+    }
+
+    function uniswapV3SwapCallback(int256 amount0Delta, int256 amount1Delta, bytes calldata) external {
+        require(msg.sender == V3_POOL, "ArbBot: unauthorized callback");
+        if (amount0Delta > 0) {
+            IERC20(IUniswapV3Pool(V3_POOL).token0()).transfer(msg.sender, uint256(amount0Delta));
+        }
+        if (amount1Delta > 0) {
+            IERC20(IUniswapV3Pool(V3_POOL).token1()).transfer(msg.sender, uint256(amount1Delta));
+        }
+    }
+
+    function _getAmountOut(uint256 amtIn, uint256 resIn, uint256 resOut) internal pure returns (uint256) {
+        uint256 amtInWithFee = amtIn * 997;
+        return (amtInWithFee * resOut) / (resIn * 1000 + amtInWithFee);
+    }
+}
+```
+
+---
+
+### 3. Foundry Fork 测试 ArbTest.t.sol
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "forge-std/Test.sol";
+import "../src/ArbBot.sol";
+
+contract ArbTest is Test {
+    bytes32 constant TX_HASH =
+        0x9edea0b66aece76f0bc7e185f9ce5cac81ce41bdd1ec4d3cf1907274bc8aa730;
+    address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+
+    uint256 constant AMOUNT_IN  = 562611020353505727;
+    uint256 constant AMOUNT_OUT = 569640303749166946;
+
+    uint256 forkId;
+    ArbBot  bot;
+
+    function setUp() public {
+        // 用 TX_HASH fork，精确定位到该 TX 执行前的链上状态
+        forkId = vm.createFork(vm.envString("RPC_URL"), TX_HASH);
+        vm.selectFork(forkId);
+        bot = new ArbBot();
+        vm.makePersistent(address(bot));
+    }
+
+    function test_arb() public {
+        vm.selectFork(forkId);
+        deal(WETH, address(bot), AMOUNT_IN);
+
+        uint256 amountOut = bot.executeArb(AMOUNT_IN);
+
+        console.log("=== Arb Result ===");
+        console.log("amountIn  :", AMOUNT_IN);
+        console.log("amountOut :", amountOut);
+        console.log("profit    :", amountOut - AMOUNT_IN);
+
+        // wei 级别精确匹配链上原始结果
+        assertEq(amountOut, AMOUNT_OUT, "amountOut mismatch: result differs from on-chain truth");
+    }
+}
+```
+
+---
+
+### 4. 测试结果（精确匹配链上）
+
+```
+=== Arb Result ===
+amountIn  : 562611020353505727
+amountOut : 569640303749166946
+profit    : 7029283395661219
+
+Suite result: ok. 1 passed; 0 failed; 0 skipped ✅
+```
+
+- **amountIn**：562611020353505727 wei（~0.5626 WETH）
+- **amountOut**：569640303749166946 wei（~0.5696 WETH）
+- **gross profit**：7029283395661219 wei（~0.00703 WETH ≈ $16.8）
+- 结果与链上原始交易**精确到 wei 完全一致** ✅
+
 <!-- Content_END -->
