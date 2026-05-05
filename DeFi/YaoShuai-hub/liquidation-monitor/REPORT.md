@@ -293,6 +293,27 @@ uv run monitor-all --chain 999
 
 ## Challenge 2: 拓展到所有 Morpho 部署链
 
+### 各链清算活跃度（2026年4月至今）
+
+通过 Morpho Blue GraphQL API 查询各链清算频率：
+
+| 排名 | Chain | Chain ID | 清算笔数 |
+|------|-------|----------|----------|
+| 🥇 | World Chain | 480 | 1000+ (达到 API 上限) |
+| 🥈 | Arbitrum | 42161 | 1000+ (达到 API 上限) |
+| 🥉 | Base | 8453 | 210 |
+| 4 | Ethereum | 1 | 159 |
+| 5 | HyperEVM | 999 | 67 |
+| 6 | Monad | 143 | 21 |
+| 7 | Polygon | 137 | 18 |
+| 8 | Katana | 747474 | 4 |
+| 9 | Unichain | 130 | 1 |
+| 10 | Optimism | 10 | 0 |
+| 11 | Stable | 988 | 0 |
+| 12 | Tempo | 4217 | 0 |
+
+**结论**: World Chain 和 Arbitrum 清算最频繁（1000+/月），适合做实时监控测试。HyperEVM 相对稀疏（67 笔/月），所以用 `eth_getLogs` 搜索历史事件时需要跨越大量空块。
+
 ### 多链配置
 
 `src/chains.py` 定义了所有已知的 Morpho Blue 部署（数据来源: Morpho Blue GraphQL API）：
