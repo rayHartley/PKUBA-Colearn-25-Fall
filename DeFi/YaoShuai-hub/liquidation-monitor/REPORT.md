@@ -295,13 +295,22 @@ uv run monitor-all --chain 999
 
 ### 多链配置
 
-`src/chains.py` 定义了所有已知的 Morpho Blue 部署：
+`src/chains.py` 定义了所有已知的 Morpho Blue 部署（数据来源: Morpho Blue GraphQL API）：
 
 | Chain | Chain ID | Morpho 地址 | Native Token |
 |-------|----------|-------------|-------------|
-| HyperEVM | 999 | `0x68e37dE8d93d3496ae143F2E900490f6280C57cD` | HYPE |
 | Ethereum | 1 | `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb` | ETH |
+| Optimism | 10 | `0xce95AfbB8EA029495c66020883F87aaE8864AF92` | ETH |
+| Unichain | 130 | `0x8f5ae9CddB9f68de460C77730b018Ae7E04a140A` | ETH |
+| Polygon | 137 | `0x1bF0c2541F820E775182832f06c0B7Fc27A25f67` | MATIC |
+| Monad | 143 | `0xD5D960E8C380B724a48AC59E2DfF1b2CB4a1eAee` | MON |
+| World Chain | 480 | `0xE741BC7c34758b4caE05062794E8Ae24978AF432` | ETH |
+| Stable | 988 | `0xa40103088A899514E3fe474cD3cc5bf811b1102e` | ETH |
+| HyperEVM | 999 | `0x68e37dE8d93d3496ae143F2E900490f6280C57cD` | HYPE |
+| Tempo | 4217 | `0x10EE9AAC980A180dd4DcFc96C746d60B0EA88f97` | ETH |
 | Base | 8453 | `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb` | ETH |
+| Arbitrum | 42161 | `0x6c247b1F6182318877311737BaC0844bAa518F5e` | ETH |
+| Katana | 747474 | `0xD50F2DffFd62f94Ee4AEd9ca05C61d0753268aBc` | ETH |
 
 ### 实现方式
 
