@@ -1,2 +1,0 @@
-[console_scripts]
-liquidation-sentinel = liquidation_sentinel.cli:app
